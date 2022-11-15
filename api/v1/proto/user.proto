@@ -1,0 +1,143 @@
+syntax = "proto3";
+
+package api;
+
+option go_package = "./internal/api/v1";
+
+import "google/protobuf/timestamp.proto";
+import "google/protobuf/empty.proto";
+import "google/api/annotations.proto";
+
+
+message CreateUserRequest {
+    string name = 1;
+    string surname = 2;
+    string email = 3;
+    string password = 4;
+    string role = 5;
+}
+
+message CreateUserResponse {
+    string userId = 1;
+}
+
+message GetUserRequest {
+    string userId = 1;
+}
+
+message GetUserResponse {
+    string userId = 1;
+    string name = 2;
+    string surname = 3;
+    string email = 4;
+    string role = 5;
+    google.protobuf.Timestamp createdAt = 6;
+    google.protobuf.Timestamp updatedAt = 7;
+    int32 isDeleted = 8;
+}
+
+message DeleteUserRequest {
+    string userId = 1;
+}
+
+message ChangeUserRequest {
+    string userID = 1;
+    string name = 2;
+    string surname = 3;
+    string email = 4;
+    string role = 5;
+}
+
+message GetUserByEmailRequest {
+    string email = 1;
+}
+
+message GetUserByEmailResponse {
+    string userID = 1;
+    string name = 2;
+    string surname = 3;
+    string email = 4;
+    string role = 5;
+    google.protobuf.Timestamp createdAt = 6;
+    google.protobuf.Timestamp updatedAt = 7;
+    int32 isDeleted = 8;
+}
+
+message ChangePasswordRequest {
+    string userID = 1;
+    string oldPassword = 2;
+    string newPassword = 3;
+}
+
+message ResetPasswordRequest {
+    string userID = 1;
+}
+
+message CheckPasswordRequest {
+    string email = 1;
+    string password = 2;
+}
+
+message CheckPasswordResponse {
+    bool verified = 1;
+}
+
+/*************** GRPC TEST BLOCK ********************/
+message HelloRequest {
+    string message = 1;
+}
+
+message HelloResponse {
+    string message = 1;
+}
+
+/************** END ********************/
+
+
+service UserAgent {
+    rpc SayHello(HelloRequest) returns (HelloResponse){
+        option (google.api.http) = {
+            get: "/api/v1/test/{message}"
+          };
+    }
+    rpc CreateUser(CreateUserRequest) returns (CreateUserResponse){
+        option (google.api.http) = {
+            post: "/api/v1/create"
+          };
+    }
+    rpc UpdateUser(ChangeUserRequest) returns (google.protobuf.Empty){
+        option (google.api.http) = {
+            patch: "/api/v1/update"
+          };
+    }
+    rpc DeleteUser(DeleteUserRequest) returns (google.protobuf.Empty){
+        option (google.api.http) = {
+            patch: "/api/v1/delete"
+          };
+    }
+    rpc GetUserById(GetUserRequest) returns (GetUserResponse){
+        option (google.api.http) = {
+            get: "/api/v1/get/{userId}"
+          };
+    }
+    rpc GetUserByEmail(GetUserByEmailRequest) returns (GetUserByEmailResponse){
+        option (google.api.http) = {
+            get: "/api/v1/getByEmail/{email}"
+          };
+    }
+    rpc CheckPassword(CheckPasswordRequest) returns (CheckPasswordResponse){
+        option (google.api.http) = {
+            post: "/api/v1/login"
+          };
+    }
+    rpc ChangePassword(ChangePasswordRequest) returns (google.protobuf.Empty){
+        option (google.api.http) = {
+            patch: "/api/v1/setPassword"
+          };
+    }
+    rpc ResetPassword(ResetPasswordRequest) returns (google.protobuf.Empty){
+        option (google.api.http) = {
+            patch: "/api/v1/resetPassword"
+          };
+    }
+}
