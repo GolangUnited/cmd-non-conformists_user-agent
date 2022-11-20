@@ -221,7 +221,7 @@ func (agent *UserAgent) GetUserByEmail(ctx context.Context, req *GetUserByEmailR
 	}, nil
 }
 
-func (agent *UserAgent) CheckPassword(ctx context.Context, req *CheckPasswordRequest) (*CheckPasswordResponse, error) {
+func (agent *UserAgent) AuthUser(ctx context.Context, req *AuthUserRequest) (*AuthUserResponse, error) {
 
 	var (
 		user models.User
@@ -242,18 +242,13 @@ func (agent *UserAgent) CheckPassword(ctx context.Context, req *CheckPasswordReq
 		}
 	}
 
-	hash, err := agent.DBConn.GetPassword(user.Id.String())
-	if err != nil {
-		return nil, status.Error(codes.Internal, err.Error())
-	}
-
-	verify := global.ComparePasswords(req.GetPassword(), hash)
+	verify := global.ComparePasswords(req.GetPassword(), user.Password)
 
 	if !verify {
 		return nil, status.Error(codes.Unauthenticated, global.ErrorUnauthenticated.Error())
 	}
 
-	return &CheckPasswordResponse{Verified: true}, nil
+	return &AuthUserResponse{Verified: true}, nil
 }
 
 func (agent *UserAgent) ChangePassword(ctx context.Context, req *ChangePasswordRequest) (*emptypb.Empty, error) {

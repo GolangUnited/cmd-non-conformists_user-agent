@@ -28,7 +28,7 @@ type UserAgentClient interface {
 	DeleteUser(ctx context.Context, in *DeleteUserRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
 	GetUserById(ctx context.Context, in *GetUserRequest, opts ...grpc.CallOption) (*GetUserResponse, error)
 	GetUserByEmail(ctx context.Context, in *GetUserByEmailRequest, opts ...grpc.CallOption) (*GetUserByEmailResponse, error)
-	CheckPassword(ctx context.Context, in *CheckPasswordRequest, opts ...grpc.CallOption) (*CheckPasswordResponse, error)
+	AuthUser(ctx context.Context, in *AuthUserRequest, opts ...grpc.CallOption) (*AuthUserResponse, error)
 	ChangePassword(ctx context.Context, in *ChangePasswordRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
 	ResetPassword(ctx context.Context, in *ResetPasswordRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
 }
@@ -86,9 +86,9 @@ func (c *userAgentClient) GetUserByEmail(ctx context.Context, in *GetUserByEmail
 	return out, nil
 }
 
-func (c *userAgentClient) CheckPassword(ctx context.Context, in *CheckPasswordRequest, opts ...grpc.CallOption) (*CheckPasswordResponse, error) {
-	out := new(CheckPasswordResponse)
-	err := c.cc.Invoke(ctx, "/api.UserAgent/CheckPassword", in, out, opts...)
+func (c *userAgentClient) AuthUser(ctx context.Context, in *AuthUserRequest, opts ...grpc.CallOption) (*AuthUserResponse, error) {
+	out := new(AuthUserResponse)
+	err := c.cc.Invoke(ctx, "/api.UserAgent/AuthUser", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -122,7 +122,7 @@ type UserAgentServer interface {
 	DeleteUser(context.Context, *DeleteUserRequest) (*emptypb.Empty, error)
 	GetUserById(context.Context, *GetUserRequest) (*GetUserResponse, error)
 	GetUserByEmail(context.Context, *GetUserByEmailRequest) (*GetUserByEmailResponse, error)
-	CheckPassword(context.Context, *CheckPasswordRequest) (*CheckPasswordResponse, error)
+	AuthUser(context.Context, *AuthUserRequest) (*AuthUserResponse, error)
 	ChangePassword(context.Context, *ChangePasswordRequest) (*emptypb.Empty, error)
 	ResetPassword(context.Context, *ResetPasswordRequest) (*emptypb.Empty, error)
 	mustEmbedUnimplementedUserAgentServer()
@@ -147,8 +147,8 @@ func (UnimplementedUserAgentServer) GetUserById(context.Context, *GetUserRequest
 func (UnimplementedUserAgentServer) GetUserByEmail(context.Context, *GetUserByEmailRequest) (*GetUserByEmailResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetUserByEmail not implemented")
 }
-func (UnimplementedUserAgentServer) CheckPassword(context.Context, *CheckPasswordRequest) (*CheckPasswordResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method CheckPassword not implemented")
+func (UnimplementedUserAgentServer) AuthUser(context.Context, *AuthUserRequest) (*AuthUserResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method AuthUser not implemented")
 }
 func (UnimplementedUserAgentServer) ChangePassword(context.Context, *ChangePasswordRequest) (*emptypb.Empty, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method ChangePassword not implemented")
@@ -259,20 +259,20 @@ func _UserAgent_GetUserByEmail_Handler(srv interface{}, ctx context.Context, dec
 	return interceptor(ctx, in, info, handler)
 }
 
-func _UserAgent_CheckPassword_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(CheckPasswordRequest)
+func _UserAgent_AuthUser_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(AuthUserRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(UserAgentServer).CheckPassword(ctx, in)
+		return srv.(UserAgentServer).AuthUser(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/api.UserAgent/CheckPassword",
+		FullMethod: "/api.UserAgent/AuthUser",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(UserAgentServer).CheckPassword(ctx, req.(*CheckPasswordRequest))
+		return srv.(UserAgentServer).AuthUser(ctx, req.(*AuthUserRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -341,8 +341,8 @@ var UserAgent_ServiceDesc = grpc.ServiceDesc{
 			Handler:    _UserAgent_GetUserByEmail_Handler,
 		},
 		{
-			MethodName: "CheckPassword",
-			Handler:    _UserAgent_CheckPassword_Handler,
+			MethodName: "AuthUser",
+			Handler:    _UserAgent_AuthUser_Handler,
 		},
 		{
 			MethodName: "ChangePassword",

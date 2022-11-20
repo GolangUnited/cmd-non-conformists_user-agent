@@ -163,12 +163,12 @@
     },
     "/api/v1/login": {
       "post": {
-        "operationId": "UserAgent_CheckPassword",
+        "operationId": "UserAgent_AuthUser",
         "responses": {
           "200": {
             "description": "A successful response.",
             "schema": {
-              "$ref": "#/definitions/apiCheckPasswordResponse"
+              "$ref": "#/definitions/apiAuthUserResponse"
             }
           },
           "default": {
@@ -328,7 +328,7 @@
     }
   },
   "definitions": {
-    "apiCheckPasswordResponse": {
+    "apiAuthUserResponse": {
       "type": "object",
       "properties": {
         "verified": {
