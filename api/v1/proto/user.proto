@@ -8,7 +8,6 @@ import "google/protobuf/timestamp.proto";
 import "google/protobuf/empty.proto";
 import "google/api/annotations.proto";
 
-
 message CreateUserRequest {
     string name = 1;
     string surname = 2;
@@ -18,30 +17,29 @@ message CreateUserRequest {
 }
 
 message CreateUserResponse {
-    string userId = 1;
+    string user_id = 1;
 }
 
 message GetUserRequest {
-    string userId = 1;
+    string user_id = 1;
 }
 
 message GetUserResponse {
-    string userId = 1;
+    string user_id = 1;
     string name = 2;
     string surname = 3;
     string email = 4;
     string role = 5;
-    google.protobuf.Timestamp createdAt = 6;
-    google.protobuf.Timestamp updatedAt = 7;
-    int32 isDeleted = 8;
+    google.protobuf.Timestamp created_at = 6;
+    int32 is_deleted = 7;
 }
 
 message DeleteUserRequest {
-    string userId = 1;
+    string user_id = 1;
 }
 
-message ChangeUserRequest {
-    string userID = 1;
+message UpdateUserRequest {
+    string user_id = 1;
     string name = 2;
     string surname = 3;
     string email = 4;
@@ -53,24 +51,23 @@ message GetUserByEmailRequest {
 }
 
 message GetUserByEmailResponse {
-    string userID = 1;
+    string user_id = 1;
     string name = 2;
     string surname = 3;
     string email = 4;
     string role = 5;
-    google.protobuf.Timestamp createdAt = 6;
-    google.protobuf.Timestamp updatedAt = 7;
-    int32 isDeleted = 8;
+    google.protobuf.Timestamp createdat = 6;
+    int32 isdeleted = 7;
 }
 
 message ChangePasswordRequest {
-    string userID = 1;
-    string oldPassword = 2;
-    string newPassword = 3;
+    string user_id = 1;
+    string old_password = 2;
+    string new_password = 3;
 }
 
 message ResetPasswordRequest {
-    string userID = 1;
+    string user_id = 1;
 }
 
 message CheckPasswordRequest {
@@ -82,30 +79,13 @@ message CheckPasswordResponse {
     bool verified = 1;
 }
 
-/*************** GRPC TEST BLOCK ********************/
-message HelloRequest {
-    string message = 1;
-}
-
-message HelloResponse {
-    string message = 1;
-}
-
-/************** END ********************/
-
-
 service UserAgent {
-    rpc SayHello(HelloRequest) returns (HelloResponse){
-        option (google.api.http) = {
-            get: "/api/v1/test/{message}"
-          };
-    }
     rpc CreateUser(CreateUserRequest) returns (CreateUserResponse){
         option (google.api.http) = {
             post: "/api/v1/create"
           };
     }
-    rpc UpdateUser(ChangeUserRequest) returns (google.protobuf.Empty){
+    rpc UpdateUser(UpdateUserRequest) returns (google.protobuf.Empty){
         option (google.api.http) = {
             patch: "/api/v1/update"
           };
@@ -117,7 +97,7 @@ service UserAgent {
     }
     rpc GetUserById(GetUserRequest) returns (GetUserResponse){
         option (google.api.http) = {
-            get: "/api/v1/get/{userId}"
+            get: "/api/v1/get/{user_id}"
           };
     }
     rpc GetUserByEmail(GetUserByEmailRequest) returns (GetUserByEmailResponse){

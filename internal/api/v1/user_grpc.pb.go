@@ -23,9 +23,8 @@ const _ = grpc.SupportPackageIsVersion7
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type UserAgentClient interface {
-	SayHello(ctx context.Context, in *HelloRequest, opts ...grpc.CallOption) (*HelloResponse, error)
 	CreateUser(ctx context.Context, in *CreateUserRequest, opts ...grpc.CallOption) (*CreateUserResponse, error)
-	UpdateUser(ctx context.Context, in *ChangeUserRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
+	UpdateUser(ctx context.Context, in *UpdateUserRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
 	DeleteUser(ctx context.Context, in *DeleteUserRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
 	GetUserById(ctx context.Context, in *GetUserRequest, opts ...grpc.CallOption) (*GetUserResponse, error)
 	GetUserByEmail(ctx context.Context, in *GetUserByEmailRequest, opts ...grpc.CallOption) (*GetUserByEmailResponse, error)
@@ -42,15 +41,6 @@ func NewUserAgentClient(cc grpc.ClientConnInterface) UserAgentClient {
 	return &userAgentClient{cc}
 }
 
-func (c *userAgentClient) SayHello(ctx context.Context, in *HelloRequest, opts ...grpc.CallOption) (*HelloResponse, error) {
-	out := new(HelloResponse)
-	err := c.cc.Invoke(ctx, "/api.UserAgent/SayHello", in, out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
 func (c *userAgentClient) CreateUser(ctx context.Context, in *CreateUserRequest, opts ...grpc.CallOption) (*CreateUserResponse, error) {
 	out := new(CreateUserResponse)
 	err := c.cc.Invoke(ctx, "/api.UserAgent/CreateUser", in, out, opts...)
@@ -60,7 +50,7 @@ func (c *userAgentClient) CreateUser(ctx context.Context, in *CreateUserRequest,
 	return out, nil
 }
 
-func (c *userAgentClient) UpdateUser(ctx context.Context, in *ChangeUserRequest, opts ...grpc.CallOption) (*emptypb.Empty, error) {
+func (c *userAgentClient) UpdateUser(ctx context.Context, in *UpdateUserRequest, opts ...grpc.CallOption) (*emptypb.Empty, error) {
 	out := new(emptypb.Empty)
 	err := c.cc.Invoke(ctx, "/api.UserAgent/UpdateUser", in, out, opts...)
 	if err != nil {
@@ -127,9 +117,8 @@ func (c *userAgentClient) ResetPassword(ctx context.Context, in *ResetPasswordRe
 // All implementations must embed UnimplementedUserAgentServer
 // for forward compatibility
 type UserAgentServer interface {
-	SayHello(context.Context, *HelloRequest) (*HelloResponse, error)
 	CreateUser(context.Context, *CreateUserRequest) (*CreateUserResponse, error)
-	UpdateUser(context.Context, *ChangeUserRequest) (*emptypb.Empty, error)
+	UpdateUser(context.Context, *UpdateUserRequest) (*emptypb.Empty, error)
 	DeleteUser(context.Context, *DeleteUserRequest) (*emptypb.Empty, error)
 	GetUserById(context.Context, *GetUserRequest) (*GetUserResponse, error)
 	GetUserByEmail(context.Context, *GetUserByEmailRequest) (*GetUserByEmailResponse, error)
@@ -143,13 +132,10 @@ type UserAgentServer interface {
 type UnimplementedUserAgentServer struct {
 }
 
-func (UnimplementedUserAgentServer) SayHello(context.Context, *HelloRequest) (*HelloResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method SayHello not implemented")
-}
 func (UnimplementedUserAgentServer) CreateUser(context.Context, *CreateUserRequest) (*CreateUserResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method CreateUser not implemented")
 }
-func (UnimplementedUserAgentServer) UpdateUser(context.Context, *ChangeUserRequest) (*emptypb.Empty, error) {
+func (UnimplementedUserAgentServer) UpdateUser(context.Context, *UpdateUserRequest) (*emptypb.Empty, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method UpdateUser not implemented")
 }
 func (UnimplementedUserAgentServer) DeleteUser(context.Context, *DeleteUserRequest) (*emptypb.Empty, error) {
@@ -183,24 +169,6 @@ func RegisterUserAgentServer(s grpc.ServiceRegistrar, srv UserAgentServer) {
 	s.RegisterService(&UserAgent_ServiceDesc, srv)
 }
 
-func _UserAgent_SayHello_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(HelloRequest)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(UserAgentServer).SayHello(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: "/api.UserAgent/SayHello",
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(UserAgentServer).SayHello(ctx, req.(*HelloRequest))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
 func _UserAgent_CreateUser_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(CreateUserRequest)
 	if err := dec(in); err != nil {
@@ -220,7 +188,7 @@ func _UserAgent_CreateUser_Handler(srv interface{}, ctx context.Context, dec fun
 }
 
 func _UserAgent_UpdateUser_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(ChangeUserRequest)
+	in := new(UpdateUserRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -232,7 +200,7 @@ func _UserAgent_UpdateUser_Handler(srv interface{}, ctx context.Context, dec fun
 		FullMethod: "/api.UserAgent/UpdateUser",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(UserAgentServer).UpdateUser(ctx, req.(*ChangeUserRequest))
+		return srv.(UserAgentServer).UpdateUser(ctx, req.(*UpdateUserRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -352,10 +320,6 @@ var UserAgent_ServiceDesc = grpc.ServiceDesc{
 	ServiceName: "api.UserAgent",
 	HandlerType: (*UserAgentServer)(nil),
 	Methods: []grpc.MethodDesc{
-		{
-			MethodName: "SayHello",
-			Handler:    _UserAgent_SayHello_Handler,
-		},
 		{
 			MethodName: "CreateUser",
 			Handler:    _UserAgent_CreateUser_Handler,

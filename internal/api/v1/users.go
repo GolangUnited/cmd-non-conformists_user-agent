@@ -46,6 +46,11 @@ func (agent *UserAgent) findUserByEmail(email string) (bool, error) {
 }
 
 func (agent *UserAgent) findUserByUUID(userId string) (bool, error) {
+
+	if !global.IsValidUUID(userId) {
+		return false, global.ErrorInvalidFormat
+	}
+
 	_, err := agent.DBConn.GetById(userId)
 
 	if err == global.ErrorUserNotFound {
@@ -91,12 +96,20 @@ func (agent *UserAgent) CreateUser(ctx context.Context, req *CreateUserRequest) 
 		return nil, err
 	}
 
-	userID, err := agent.DBConn.Create(
-		req.GetName(),
-		req.GetSurname(),
-		req.GetEmail(),
-		req.GetPassword(),
-		req.GetRole())
+	hash, err := global.EncodingPassword(req.GetPassword())
+	if err != nil {
+		return nil, status.Error(codes.Internal, err.Error())
+	}
+
+	newUser := models.User{
+		Name:     req.GetName(),
+		Surname:  req.GetSurname(),
+		Email:    req.GetEmail(),
+		Password: hash,
+		Role:     req.GetRole(),
+	}
+
+	userID, err := agent.DBConn.Create(&newUser)
 
 	if err != nil {
 		return nil, status.Error(codes.Internal, err.Error())
@@ -106,9 +119,9 @@ func (agent *UserAgent) CreateUser(ctx context.Context, req *CreateUserRequest) 
 }
 
 // update some user`s fields by id
-func (agent *UserAgent) UpdateUser(ctx context.Context, req *ChangeUserRequest) (*emptypb.Empty, error) {
+func (agent *UserAgent) UpdateUser(ctx context.Context, req *UpdateUserRequest) (*emptypb.Empty, error) {
 
-	hasUser, err := agent.findUserByUUID(req.GetUserID())
+	hasUser, err := agent.findUserByUUID(req.GetUserId())
 	if err != nil {
 		return nil, status.Error(codes.Internal, err.Error())
 	}
@@ -124,7 +137,7 @@ func (agent *UserAgent) UpdateUser(ctx context.Context, req *ChangeUserRequest) 
 	}
 
 	err = agent.DBConn.Update(
-		req.GetUserID(),
+		req.GetUserId(),
 		req.GetName(),
 		req.GetSurname(),
 		req.GetEmail(),
@@ -157,6 +170,10 @@ func (agent *UserAgent) DeleteUser(ctx context.Context, req *DeleteUserRequest) 
 
 // find user by uuid
 func (agent *UserAgent) GetUserById(ctx context.Context, req *GetUserRequest) (*GetUserResponse, error) {
+
+	if !global.IsValidUUID(req.GetUserId()) {
+		return nil, status.Error(codes.InvalidArgument, global.ErrorInvalidFormat.Error())
+	}
 
 	rowUser, err := agent.DBConn.GetById(req.GetUserId())
 	if err != nil {
@@ -194,13 +211,13 @@ func (agent *UserAgent) GetUserByEmail(ctx context.Context, req *GetUserByEmailR
 	}
 
 	return &GetUserByEmailResponse{
-		UserID:    rowUser.Id.String(),
+		UserId:    rowUser.Id.String(),
 		Name:      rowUser.Name,
 		Surname:   rowUser.Surname,
 		Email:     rowUser.Email,
 		Role:      rowUser.Role,
-		CreatedAt: timestamppb.New(rowUser.CreatedAt),
-		IsDeleted: rowUser.IsDeleted,
+		Createdat: timestamppb.New(rowUser.CreatedAt),
+		Isdeleted: rowUser.IsDeleted,
 	}, nil
 }
 
@@ -241,7 +258,7 @@ func (agent *UserAgent) CheckPassword(ctx context.Context, req *CheckPasswordReq
 
 func (agent *UserAgent) ChangePassword(ctx context.Context, req *ChangePasswordRequest) (*emptypb.Empty, error) {
 
-	hasUser, err := agent.findUserByUUID(req.GetUserID())
+	hasUser, err := agent.findUserByUUID(req.GetUserId())
 	if err != nil {
 		return nil, status.Error(codes.Internal, err.Error())
 	}
@@ -250,7 +267,7 @@ func (agent *UserAgent) ChangePassword(ctx context.Context, req *ChangePasswordR
 		return nil, status.Error(codes.NotFound, global.ErrorUserNotFound.Error())
 	}
 
-	hash, err := agent.DBConn.GetPassword(req.GetUserID())
+	hash, err := agent.DBConn.GetPassword(req.GetUserId())
 	if err != nil {
 		return nil, status.Error(codes.Internal, err.Error())
 	}
@@ -267,7 +284,7 @@ func (agent *UserAgent) ChangePassword(ctx context.Context, req *ChangePasswordR
 		return nil, status.Error(codes.InvalidArgument, global.ErrorBadPassword.Error())
 	}
 
-	err = agent.DBConn.SetPassword(req.GetUserID(), req.GetNewPassword())
+	err = agent.DBConn.SetPassword(req.GetUserId(), req.GetNewPassword())
 	if err != nil {
 		if err.Error() == global.ErrorOldPassInvalid.Error() {
 			return nil, status.Error(codes.InvalidArgument, global.ErrorOldPassInvalid.Error())
@@ -285,23 +302,11 @@ func (agent *UserAgent) ResetPassword(ctx context.Context, req *ResetPasswordReq
 		return nil, status.Error(codes.Internal, err.Error())
 	}
 	log.Println(newPass)
-	///here must be a code, which send new pass to user
-	err = agent.DBConn.SetPassword(req.GetUserID(), newPass)
+	///TODO: write the handler for sending new pass
+	err = agent.DBConn.SetPassword(req.GetUserId(), newPass)
 	if err != nil {
 		return nil, status.Error(codes.Internal, err.Error())
 	}
 
 	return &emptypb.Empty{}, nil
-}
-
-// TEST FUNC
-func (agent *UserAgent) SayHello(ctx context.Context, req *HelloRequest) (*HelloResponse, error) {
-	input := req.Message
-	if strings.EqualFold(input, "Hello!") {
-		return &HelloResponse{Message: "Hello? Guy!"}, nil
-	} else if strings.EqualFold(input, "Give me error") {
-		return nil, status.Error(codes.Unknown, "Get it!")
-	}
-
-	return &HelloResponse{Message: "Hey, say hi, be polite!"}, nil
 }

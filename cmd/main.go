@@ -71,8 +71,12 @@ func main() {
 
 	go func() {
 
-		log.Printf("starting server on port %s", conf.TCPPort)
-		listener, err := net.Listen("tcp", fmt.Sprintf(":%s", conf.TCPPort))
+		var port = "8080"
+		if conf.TCPPort != "" {
+			port = conf.TCPPort
+		}
+		log.Printf("starting server on port %s", port)
+		listener, err := net.Listen("tcp", fmt.Sprintf(":%s", port))
 		if err != nil {
 			log.Fatal(err)
 		}
@@ -86,13 +90,20 @@ func main() {
 	<-done
 	log.Print("Server Stopping..")
 
-	dbConn.Close()
+	err := dbConn.Close()
+	if err != nil {
+		log.Fatal(err)
+	}
+
 	srv.GracefulStop()
 
 	log.Print("Server stopped")
 
 	defer func() {
 		dbConn.Close()
+		if err != nil {
+			log.Fatal(err)
+		}
 		srv.Stop()
 	}()
 }

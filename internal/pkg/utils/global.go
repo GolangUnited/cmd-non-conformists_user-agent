@@ -2,6 +2,7 @@ package utils
 
 import (
 	"errors"
+	"regexp"
 	"unicode"
 
 	"github.com/badoux/checkmail"
@@ -44,29 +45,28 @@ func CheckEmail(input string) bool {
 func ValidatePassword(pass string) bool {
 	var (
 		upp, low, num, sym bool
-		tot                uint8
 	)
+
+	if len(pass) < 8 {
+		return false
+	}
 
 	for _, char := range pass {
 		switch {
 		case unicode.IsUpper(char):
 			upp = true
-			tot++
 		case unicode.IsLower(char):
 			low = true
-			tot++
 		case unicode.IsNumber(char):
 			num = true
-			tot++
 		case unicode.IsPunct(char) || unicode.IsSymbol(char):
 			sym = true
-			tot++
 		default:
 			return false
 		}
 	}
 
-	if !upp || !low || !num || !sym || tot < 8 {
+	if !upp || !low || !num || !sym {
 		return false
 	}
 
@@ -81,4 +81,9 @@ func EncodingPassword(pass string) (string, error) {
 func ComparePasswords(pass string, hash string) bool {
 	err := bcrypt.CompareHashAndPassword([]byte(hash), []byte(pass))
 	return err == nil
+}
+
+func IsValidUUID(uuid string) bool {
+	r := regexp.MustCompile("^[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-4[a-fA-F0-9]{3}-[8|9|aA|bB][a-fA-F0-9]{3}-[a-fA-F0-9]{12}$")
+	return r.MatchString(uuid)
 }

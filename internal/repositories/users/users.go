@@ -3,7 +3,6 @@ package users
 import (
 	"log"
 	"strings"
-	"time"
 
 	"github.com/golang-unitied-school/useragent/internal/models"
 	global "github.com/golang-unitied-school/useragent/internal/pkg/utils"
@@ -35,23 +34,9 @@ func (ptr *PGSQL) Init(connectionString string) {
 	}
 }
 
-func (ptr *PGSQL) Create(fname, sname, email, pass, role string) (string, error) {
+func (ptr *PGSQL) Create(user *models.User) (string, error) {
 
-	hash, err := global.EncodingPassword(pass)
-	if err != nil {
-		return "", err
-	}
-
-	user := models.User{
-		Name:      fname,
-		Surname:   sname,
-		Email:     email,
-		Password:  hash,
-		Role:      role,
-		CreatedAt: time.Now(),
-	}
-
-	newRow := ptr.dbConn.Create(&user)
+	newRow := ptr.dbConn.Create(user)
 
 	if newRow.Error != nil {
 		return "", newRow.Error
@@ -61,7 +46,7 @@ func (ptr *PGSQL) Create(fname, sname, email, pass, role string) (string, error)
 }
 func (ptr *PGSQL) Update(uuid, fname, sname, email, role string) error {
 
-	var row models.User
+	var row, newRow models.User
 
 	res := ptr.dbConn.Model(&User).Where("id = ? and is_deleted = 0", uuid).First(&row)
 	if res.Error != nil {
@@ -71,22 +56,22 @@ func (ptr *PGSQL) Update(uuid, fname, sname, email, role string) error {
 	changes := 0
 
 	if !strings.EqualFold(row.Name, fname) && fname != "" {
-		row.Name = fname
+		newRow.Name = fname
 		changes++
 	}
 
 	if !strings.EqualFold(row.Surname, sname) && sname != "" {
-		row.Surname = sname
+		newRow.Surname = sname
 		changes++
 	}
 
 	if !strings.EqualFold(row.Email, email) && email != "" {
-		row.Email = email
+		newRow.Email = email
 		changes++
 	}
 
 	if !strings.EqualFold(row.Role, role) && role != "" {
-		row.Role = role
+		newRow.Role = role
 		changes++
 	}
 
@@ -94,7 +79,8 @@ func (ptr *PGSQL) Update(uuid, fname, sname, email, role string) error {
 		return global.ErrorNoNewData
 	}
 
-	res = ptr.dbConn.Model(&row).Updates(&row)
+	newRow.Id = row.Id
+	res = ptr.dbConn.Model(&newRow).Updates(&newRow)
 	if res.Error != nil {
 		return res.Error
 	}
@@ -160,7 +146,7 @@ func (ptr *PGSQL) SetPassword(userId, newPass string) error {
 		return err
 	}
 
-	res := ptr.dbConn.Model(&User).Where("id = ? and is_deleted = 0", userId).First(&row).UpdateColumn("Password", hash)
+	res := ptr.dbConn.Model(&User).Where("id = ? and is_deleted = 0", userId).First(&row).UpdateColumn("password", hash)
 	if res.Error != nil {
 		return res.Error
 	}

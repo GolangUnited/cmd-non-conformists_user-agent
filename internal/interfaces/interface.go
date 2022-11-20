@@ -8,7 +8,7 @@ type EmptyUser struct{}
 
 type UserDataManager interface {
 	Init(connectionString string)
-	Create(fname, sname, email, pass, role string) (string, error)
+	Create(user *models.User) (string, error)
 	Update(uuid, fname, sname, email, role string) error
 	Delete(userId string) error
 	GetById(userId string) (models.User, error)

@@ -217,7 +217,7 @@
         },
         "parameters": [
           {
-            "name": "userID",
+            "name": "userId",
             "in": "query",
             "required": false,
             "type": "string"
@@ -248,7 +248,7 @@
         },
         "parameters": [
           {
-            "name": "userID",
+            "name": "userId",
             "in": "query",
             "required": false,
             "type": "string"
@@ -263,36 +263,6 @@
             "name": "newPassword",
             "in": "query",
             "required": false,
-            "type": "string"
-          }
-        ],
-        "tags": [
-          "UserAgent"
-        ]
-      }
-    },
-    "/api/v1/test/{message}": {
-      "get": {
-        "operationId": "UserAgent_SayHello",
-        "responses": {
-          "200": {
-            "description": "A successful response.",
-            "schema": {
-              "$ref": "#/definitions/apiHelloResponse"
-            }
-          },
-          "default": {
-            "description": "An unexpected error response.",
-            "schema": {
-              "$ref": "#/definitions/rpcStatus"
-            }
-          }
-        },
-        "parameters": [
-          {
-            "name": "message",
-            "in": "path",
-            "required": true,
             "type": "string"
           }
         ],
@@ -321,7 +291,7 @@
         },
         "parameters": [
           {
-            "name": "userID",
+            "name": "userId",
             "in": "query",
             "required": false,
             "type": "string"
@@ -377,7 +347,7 @@
     "apiGetUserByEmailResponse": {
       "type": "object",
       "properties": {
-        "userID": {
+        "userId": {
           "type": "string"
         },
         "name": {
@@ -392,15 +362,11 @@
         "role": {
           "type": "string"
         },
-        "createdAt": {
+        "createdat": {
           "type": "string",
           "format": "date-time"
         },
-        "updatedAt": {
-          "type": "string",
-          "format": "date-time"
-        },
-        "isDeleted": {
+        "isdeleted": {
           "type": "integer",
           "format": "int32"
         }
@@ -428,21 +394,9 @@
           "type": "string",
           "format": "date-time"
         },
-        "updatedAt": {
-          "type": "string",
-          "format": "date-time"
-        },
         "isDeleted": {
           "type": "integer",
           "format": "int32"
-        }
-      }
-    },
-    "apiHelloResponse": {
-      "type": "object",
-      "properties": {
-        "message": {
-          "type": "string"
         }
       }
     },
